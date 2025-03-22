@@ -2,7 +2,7 @@
 
 A multipage app in Vite + TS.
 
-Hosted on GitHub Pages at https://fg.return215.xyz.
+Hosted on GitHub Pages at <https://fg.return215.xyz>.
 
 Has `.nojekyll` to prevent automatic Jekyll from running.
 
@@ -11,6 +11,8 @@ Data is saved to a Supabase PostgreSQL database.
 ## Functionality
 
 The page should be available to the public, with ONLY login avaliable to the site for administrators. Registrations are handled in case-by-case basis by the administrators.
+
+The public only has viewing access to the site, the administrator has all access, including editing of data and adding new contracts to the site.
 
 ## Data Models
 
@@ -21,6 +23,7 @@ interface DiscordUser {
   displayName?: string
   id?: number
   username: string
+  aliases: string[]
 }
 ```
 
@@ -38,14 +41,28 @@ interface Player extends DiscordUser {
 
 ```ts
 interface Contract {
-  faction: string
+  clientFaction?: string
+  attackerFaction: string
+  defenderFaction?: string
   price: number
   rate: number
   createdAt: Date
   completedAt?: Date
-  status: 'active' | 'completed'
+  status: 'bidding' | 'canceled' | 'waiting' | 'active' | 'completed'
+  message: string
+  auctionDuration: number
+  auctionExtOnBid: number
+  startingPrice: number
 }
 ```
+
+The status means:
+
+- `bidding`: contract is open for bidding
+- `canceled`: contract is canceled as nobody bids
+- `waiting`: contract is waiting for the attacker to initiate the attack
+- `active`: contract is active, currently in battle
+- `completed`: contract is completed, battle ended
 
 ## Page Structure
 
@@ -53,7 +70,26 @@ interface Contract {
 
 File name: index.html
 
-Provides jump points.
+Provides jump points. Shows most recent non-canceled contract, and based on status:
+
+- Bidding: show expected end of bidding time, show attacker
+- Waiting: show expected end of waiting time, hide winner and defender (as there is none), show attacker
+- Active: show expected end of active time, hide winner, show attacker and defender
+- Completed: show time of completion
+
+Also provide list of previous contracts in reverse chronological order at [List of Contracts](#list-of-contracts).
+
+### Contract Page
+
+File name: contract.html
+
+Shows all details of the contract.
+
+### List of Contracts
+
+File name: contracts.html
+
+Shows list of contracts in reverse chronological order. Each entry has a link to the contract page.
 
 ### Auction Starter
 
@@ -82,26 +118,18 @@ The following are customizable:
 Result: a Discord command
 
 ```ts
-`/auction_offer starting_price:${startingPrice} offer_period:${offerPeriod} extension_on_bid:${extOnBid} channel:Auction House (default)  anonymous:True bidding_policy:Each bid increases the price by 10% limit_to_factions:True description:${message} (Fighters Guild services; ${offerPeriod} hours + ${extOnBid} minute extension; price per ${Math.floor(rate/100)/10}k IP)`
+`/auction_offer starting_price:${startingPrice} offer_period:${auctionDuration} extension_on_bid:${auctionExtOnBid} channel:Auction House (default)  anonymous:True bidding_policy:Each bid increases the price by 10% limit_to_factions:True description:${message} (Fighters Guild services; ${offerPeriod} hours + ${auctionExtOnBid} minute extension; price per ${Math.floor(rate/100)/10}k IP)`
 ```
 
 Check winner: a message is posted on DM, copy that here and check for `<${discordId}>`. Add a button to save this winner and final price and rate to localStorage/database.
 
-Saved in localStorage/database:
-
 ```ts
-interface contract {
-  faction: string
-  price: number
-  rate: number
-}
+`You've sold \`${message} (Fighters Guild services; ${auctionDuration} hours + ${auctionExtOnBid} minute extension; price per ${Math.floor(rate/100)/10}k IP)\` (custom offer) for **${price}G** https://discord.com/channels/562910943848169472/1105092028011913318/1338064241143451668 to <@${id}>!`
 ```
+
+Saved in localStorage/database into the [contracts](#contract) table.
 
 Template message of auction end:
-
-```ts
-`You've sold \`${message} (Fighters Guild services; 24 hours + 120 minute extension; price per 50k IP)\` (custom offer) for **${price}G** https://discord.com/channels/562910943848169472/1105092028011913318/1338064241143451668 to <@${discordId}>!`
-```
 
 ### Payout
 

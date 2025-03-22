@@ -4,7 +4,7 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_KEY) {
     throw new Error('Missing Supabase environment variables')
 }
 
-const supabase = createClient(
+export const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL,
     import.meta.env.VITE_SUPABASE_KEY,
     {
@@ -14,5 +14,3 @@ const supabase = createClient(
         }
     }
 )
-
-export { supabase }

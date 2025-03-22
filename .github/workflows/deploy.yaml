@@ -1,0 +1,8 @@
+name: Deploy
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}

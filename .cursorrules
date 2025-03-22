@@ -1,0 +1,3 @@
+Use no semicolon at end of line for typescript.
+Use indentation of 2 in html, 4 in typescript.
+Use double quotes in typescript, except for templates or to escape double quotes.

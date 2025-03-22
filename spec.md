@@ -1,6 +1,6 @@
 # Program Specification
 
-A multipage app in Vite + TS.
+A multipage app in Vite + TS + Vue.
 
 Hosted on GitHub Pages at <https://fg.return215.xyz>.
 

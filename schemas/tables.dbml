@@ -1,0 +1,74 @@
+Table "discord_users" {
+  "username" VARCHAR(255) [pk]
+  "display_name" VARCHAR(255)
+  "discord_id" BIGINT [unique]
+  "aliases" "TEXT[]"
+}
+
+Table "factions" {
+  "username" VARCHAR(255) [pk]
+  "tag" VARCHAR(50) [not null]
+}
+
+Table "players" {
+  "username" VARCHAR(255) [pk]
+  "in_game_name" VARCHAR(255) [not null]
+}
+
+Table "battles" {
+  "id" SERIAL [pk, increment]
+  "attacker_username" VARCHAR(255) [not null]
+  "defender_username" VARCHAR(255)
+  "location" VARCHAR(255)
+  "started_at" TIMESTAMP [not null]
+  "ended_at" TIMESTAMP
+  "outcome" VARCHAR(4)
+  "status" VARCHAR(10) [not null]
+}
+
+Table "contracts" {
+  "battle_id" INTEGER [pk]
+  "client_username" VARCHAR(255)
+  "price" INTEGER [not null]
+  "rate" INTEGER [not null]
+  "bidding_at" TIMESTAMP [not null]
+  "created_at" TIMESTAMP
+  "status" VARCHAR(10) [not null]
+  "message" TEXT [not null]
+  "auction_duration" INTEGER [not null]
+  "auction_ext_on_bid" INTEGER [not null]
+  "starting_price" INTEGER [not null]
+}
+
+Table "contract_details" {
+  "battle_id" INTEGER [pk]
+  "ip_spent" INTEGER [not null]
+}
+
+Table "individual_contract_details" {
+  "battle_id" INTEGER
+  "player_username" VARCHAR(255)
+  "ip_spent" INTEGER [not null]
+
+  Indexes {
+    (battle_id, player_username) [pk]
+  }
+}
+
+Ref:"discord_users"."username" < "factions"."username"
+
+Ref:"discord_users"."username" < "players"."username"
+
+Ref:"factions"."username" < "battles"."attacker_username"
+
+Ref:"factions"."username" < "battles"."defender_username"
+
+Ref:"battles"."id" < "contracts"."battle_id"
+
+Ref:"factions"."username" < "contracts"."client_username"
+
+Ref:"contracts"."battle_id" < "contract_details"."battle_id"
+
+Ref:"contracts"."battle_id" < "individual_contract_details"."battle_id"
+
+Ref:"players"."username" < "individual_contract_details"."player_username"
